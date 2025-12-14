@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Cicilan</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #F4F5F7;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .edit-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            max-width: 480px;
+            margin: 20px auto;
+        }
+        h4 {
+            font-weight: 600;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-control {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 12px;
+        }
+        .btn {
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        footer {
+            font-size: 0.85rem;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <div class="edit-card shadow-sm">
+        <form method="post" action="/cicilan/update_cicilan/<?= $cicilan['id'] ?>">
+            <h4>Edit Cicilan</h4>
+
+            <div class="mb-3">
+                <label>Tanggal</label>
+                <input type="date" name="tanggal" class="form-control"
+                       value="<?= $cicilan['tanggal'] ?>" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Jumlah</label>
+                <input 
+                    type="text"
+                    id="jumlah"
+                    name="jumlah"
+                    class="form-control"
+                    value="<?= number_format($cicilan['jumlah'], 0, ',', '.') ?>"
+                    oninput="formatNumber(this)"
+                    required
+                >
+            </div>
+
+            <button class="btn btn-primary w-100 mb-2">Simpan</button>
+            <a href="/cicilan/edit/<?= $cicilan['debt_id'] ?>" class="btn btn-secondary w-100">Kembali</a>
+        </form>
+    </div>
+
+</div>
+
+<footer class="text-center mt-4 mb-2 text-muted">
+    Powered by GatriX
+</footer>
+
+<script>
+function formatNumber(element) {
+    let value = element.value.replace(/\D/g, "");
+    element.value = new Intl.NumberFormat('id-ID').format(value);
+}
+
+document.querySelector("form").addEventListener("submit", function() {
+    let jumlah = document.getElementById("jumlah");
+    jumlah.value = jumlah.value.replace(/\./g, "");
+});
+</script>
+
+</body>
+</html>
+

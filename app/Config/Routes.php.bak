@@ -1,0 +1,43 @@
+<?php
+
+use CodeIgniter\Router\RouteCollection;
+
+/**
+ * @var RouteCollection $routes
+ */
+
+// Halaman web / mobile
+$routes->get('/', 'DebtController::page');
+$routes->get('debt/page', 'DebtController::page');
+$routes->get('debt/mobile', 'DebtController::mobile');
+
+// Tambah hutang baru
+$routes->get('debt/add', 'DebtController::add');   // tampilkan form
+$routes->post('debt/save', 'DebtController::save'); // simpan data baru
+
+// Tombol hapus POST
+$routes->post('debt/delete/(:num)', 'DebtController::delete/$1');
+
+$routes->get('cicilan/edit_utama/(:num)', 'DebtController::edit/$1'); // tampilkan form ubah hutang + cicilan
+
+
+$routes->post('cicilan/update/(:num)', 'DebtController::update/$1'); // simpan perubahan hutang
+$routes->post('cicilan/add/(:num)', 'DebtController::addCicilan/$1'); // tambah cicilan baru
+$routes->post('cicilan/delete/(:num)', 'DebtController::deleteCicilan/$1'); // hapus cicilan
+
+$routes->get('/cicilan/edit/(:num)', 'DebtController::editCicilan/$1');
+
+$routes->post('/cicilan/update_cicilan/(:num)', 'DebtController::updateCicilan/$1');
+
+
+
+
+// Group API
+$routes->group('api', function($routes) {
+    $routes->get('debts', 'DebtController::index');
+    $routes->post('debts', 'DebtController::create');
+    $routes->get('debts/(:num)', 'DebtController::show/$1');
+    $routes->put('debts/(:num)', 'DebtController::update/$1');
+    $routes->delete('debts/(:num)', 'DebtController::delete/$1');
+});
+<PRE></PRE>

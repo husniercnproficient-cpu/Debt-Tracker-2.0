@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubah Hutang & Tambah Cicilan</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body { background: #F4F5F7; font-family: 'Segoe UI', sans-serif; }
+        .form-container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #fff; 
+            border-radius: 16px; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+        }
+        h3 { text-align: center; font-weight: 600; margin-bottom: 20px; }
+        .cicilan-list { max-width: 500px; margin: 20px auto; }
+        .btn-icon { width: 36px; height: 36px; display:flex; justify-content:center; align-items:center; padding:0; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+
+    <!-- Form Ubah Hutang -->
+    <div class="form-container">
+        <h3>Ubah Nama Aplikasi</h3>
+
+        <?php if(session()->getFlashdata('success')): ?>
+            <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
+        <?php endif; ?>
+
+        <form action="/debt/update/<?= $debt['id'] ?>" method="post">
+            <?= csrf_field() ?>
+
+            <div class="mb-3">
+                <label class="form-label">Nama Aplikasi</label>
+                <input type="text" name="namaAplikasi" class="form-control" value="<?= esc($debt['namaAplikasi']) ?>" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Jumlah Pinjaman (Rp)</label>
+                <input type="text" class="form-control" value="<?= number_format($debt['jumlahPinjaman'],0,',','.') ?>" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Jumlah Tenor</label>
+                <input type="number" class="form-control" value="<?= esc($debt['jumlahTenor']) ?>" readonly>
+            </div>
+
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a href="/debt/page" class="btn btn-secondary">Kembali</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Form Tambah Cicilan -->
+    <div class="form-container mt-4">
+        <h3>Tambah Cicilan Baru</h3>
+        <form action="/cicilan/add/<?= $debt['id'] ?>" method="post">
+            <?= csrf_field() ?>
+            <div class="mb-3">
+                <label class="form-label">Tanggal Jatuh Tempo</label>
+                <input type="date" name="tanggal" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Jumlah Cicilan (Rp)</label>
+                <input type="text" name="jumlah" class="form-control input-ribuan" required>
+            </div>
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-success">Tambah Cicilan</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Daftar Cicilan -->
+    <div class="cicilan-list">
+        <h5 class="mb-2">Daftar Cicilan</h5>
+
+        <?php $totalCicilan = 0; ?>
+
+        <?php if(!empty($cicilan)): ?>
+            <ul class="list-group">
+
+                <?php foreach($cicilan as $c): 
+                    $totalCicilan += $c['jumlah'];
+                ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                    <!-- Info cicilan -->
+                    <div>
+                        <div><strong><?= date('d M Y', strtotime($c['tanggal'])) ?></strong></div>
+                        <div>Rp <?= number_format($c['jumlah'], 0, ',', '.') ?></div>
+                    </div>
+
+                    <!-- Tombol aksi -->
+                    <div class="d-flex gap-2">
+
+                        <!-- Edit -->
+                        <a href="/cicilan/edit/<?= $c['id'] ?>" 
+                           class="btn btn-warning btn-sm btn-icon" 
+                           title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+
+                        <!-- Lunas -->
+                        <?php if (empty($c['lunas'])): ?>
+                            <a href="/cicilan/lunas/<?= $c['id'] ?>" 
+                               class="btn btn-success btn-sm btn-icon" 
+                               title="Tandai Lunas">
+                                <i class="fas fa-check"></i>
+                            </a>
+                        <?php endif; ?>
+
+                        <!-- Hapus -->
+                        <form action="/cicilan/delete/<?= $c['id'] ?>" 
+                              method="post" 
+                              onsubmit="return confirm('Yakin ingin hapus cicilan ini?');">
+                            <?= csrf_field() ?>
+                            <button type="submit" 
+                                    class="btn btn-danger btn-sm btn-icon" 
+                                    title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+
+                    </div>
+
+                </li>
+                <?php endforeach; ?>
+
+            </ul>
+        <?php else: ?>
+            <p class="text-muted">Belum ada cicilan.</p>
+        <?php endif; ?>
+
+        <p class="mt-2"><strong>Total Cicilan:</strong> Rp <?= number_format($totalCicilan,0,',','.') ?></p>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ribuanInputs = document.querySelectorAll('.input-ribuan');
+
+    ribuanInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if(value === '') value = '0';
+            this.value = Number(value).toLocaleString('id-ID');
+        });
+
+        input.closest('form').addEventListener('submit', function() {
+            input.value = input.value.replace(/\./g, '');
+        });
+    });
+});
+</script>
+
+</body>
+</html>

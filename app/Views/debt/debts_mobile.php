@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Tracker</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #F4F5F7;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .app-title {
+            font-weight: 600;
+            font-size: 22px;
+        }
+        .debt-card {
+            border-radius: 18px;
+            margin-bottom: 16px;
+            background: #fff;
+            padding: 18px;
+        }
+        .debt-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .debt-amount {
+            font-size: 14px;
+            color: #777;
+        }
+        .card-buttons .btn {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-3">
+
+    <!-- Tombol Tambah Hutang Baru -->
+    <div class="d-grid mb-4">
+        <a href="/debt/add" class="btn btn-primary btn-lg">+ Tambah Aplikasi</a>
+    </div>
+
+    <h3 class="text-center app-title mb-4">DebTTracker 2.0</h3>
+
+    <!-- Flash message -->
+    <?php if(session()->getFlashdata('success')): ?>
+        <div class="alert alert-success">
+            <?= session()->getFlashdata('success') ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($debts)): ?>
+
+        <?php foreach ($debts as $debt): ?>
+
+            <?php
+                $total = $debt['total'] ?? 0;
+            ?>
+
+            <div class="debt-card shadow-sm">
+
+                <!-- Nama Hutang -->
+                <div class="debt-name mb-2"><?= esc($debt['name']) ?></div>
+
+                <!-- Total Hutang -->
+                <small class="debt-amount d-block mb-3">
+                    Total: <strong>Rp <?= number_format($total, 0, ',', '.') ?></strong>
+                </small>
+
+                <!-- Accordion Daftar Cicilan -->
+                <?php if (!empty($debt['cicilan'])): ?>
+                    <div class="accordion" id="accordion<?= $debt['id'] ?>">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading<?= $debt['id'] ?>">
+                                <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $debt['id'] ?>" aria-expanded="false" aria-controls="collapse<?= $debt['id'] ?>">
+                                    Daftar Cicilan (<?= count($debt['cicilan']) ?>)
+                                </button>
+                            </h2>
+                            <div id="collapse<?= $debt['id'] ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $debt['id'] ?>" data-bs-parent="#accordion<?= $debt['id'] ?>">
+                                <div class="accordion-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        <?php foreach ($debt['cicilan'] as $c): ?>
+                                            <li class="list-group-item d-flex justify-content-between py-2">
+                                                <span><?= date('d M Y', strtotime($c['tanggal'])) ?></span>
+                                                <strong>Rp <?= number_format($c['jumlah'], 0, ',', '.') ?></strong>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <small class="text-muted d-block mb-3">Belum ada cicilan.</small>
+                <?php endif; ?>
+
+                <!-- Tombol Card -->
+                <div class="card-buttons mt-3 d-grid">
+                    <a href="/cicilan/edit_utama/<?= $debt['id'] ?>" class="btn btn-success btn-sm w-100">Ubah & Tambah Cicilan</a>
+
+                    <!-- Form hapus menggunakan POST -->
+                    <form action="/debt/delete/<?= $debt['id'] ?>" method="post" onsubmit="return confirm('Yakin ingin menghapus data aplikasi ini?');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-danger btn-sm w-100">Hapus Aplikasi</button>
+                    </form>
+                </div>
+
+            </div>
+
+        <?php endforeach; ?>
+
+    <?php else: ?>
+
+        <p class="text-center text-muted">Belum ada aplikasi tercatat.</p>
+
+    <?php endif; ?>
+
+</div>
+
+<footer class="text-center mt-4 mb-2 text-muted" style="font-size: 0.85rem;">
+        Powered by GatriX
+    </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
